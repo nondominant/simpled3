@@ -15,9 +15,9 @@ var margin = {top: 20, right: 20, bottom: 30, left: 40},
 // set the ranges
 var x = d3.scaleBand()
           .range([0, width])
-          .padding(0.1);
+          .padding(0.3);
 var y = d3.scaleLinear()
-          .range([height, 0]);
+          .range([height - margin.top - margin.bottom, 0]);
           
 // append the svg object to the body of the page
 // append a 'group' element to 'svg'
@@ -42,7 +42,11 @@ d3.csv("sales.csv", function(error, data) {
 
   // Scale the range of the data in the domains
   x.domain(data.map(d => { return d.name; }));
-  y.domain([0, 24]);
+  y.domain([
+    1, 16
+  ]);
+    console.log("min" , d3.min(data.map(d => { return d.log[0].time; }))) 
+    console.log("max", d3.max(data.map(d => { return d.log[d.log.length-1].time; }))) 
 
   // append the rectangles for the bar chart
   svg.selectAll(".bar")
@@ -55,19 +59,13 @@ d3.csv("sales.csv", function(error, data) {
       .attr("height", e => y(e.log[e.log.length - 1].time - e.log[0].time))
   // add the x Axis
   svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," +( height + 20 )+ ")")
       .call(d3.axisBottom(x));
+  console.log("height", height);
 
   // add the y Axis
   svg.append("g")
       .call(d3.axisLeft(y));
-
-
-    console.log("success with: ", data);
-
-
-
-
 },
       //update when data[0].date changes
       [data[0].date]

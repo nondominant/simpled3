@@ -12,12 +12,12 @@ const data = [
     name: "louis",
   date: `${d}`,
   log: [
-    {machine: "workshop", time: 9, type: "start"},
-    {machine: "cbw", time: 11, type: "start"},
-    {machine: "cbw", time: 12, type: "end"},
-    {machine: "fax folder", time: 14, type: "start"},
-    {machine: "ironer 3", time: 16, type: "start"},
-    {machine: "workshop", time: 18, type: "end"},
+    {machine: "workshop", time: 1, type: "start"},
+    {machine: "cbw", time: 2, type: "start"},
+    {machine: "cbw", time: 3, type: "end"},
+    {machine: "fax folder", time: 4, type: "start"},
+    {machine: "ironer 3", time: 6, type: "start"},
+    {machine: "workshop", time: 8, type: "end"},
   ]
 },
   { 
