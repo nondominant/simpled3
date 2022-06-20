@@ -1,81 +1,115 @@
 import { useD3 } from '../hooks/useD3';
-import React from 'react';
+import { React, useState } from 'react';
 import * as d3 from 'd3';
 
-export default function ChartComponent({ data }) {
+
+export default function ChartComponent({ setRef, data }) {
   try {
-    
-    const ref = useD3(
+    if (!data.map) {
+      console.log("no data provided")
+      return null;
+    }
+  } catch {
+    console.log("no data provided")
+    return null;
+  }
+    //let ref = {}
+  try {
+    //ref holds the dom node assigned to 
+    //useD3 = (renderChartFn, []) => { return ref}
+
+    //svg = d3.select(ref.current)
+
+    setRef = useD3(
       (svg) => {
-        // set the dimensions and margins of the graph
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+      const colour = { Louis: "#4ff633", Tony: "#11ff8e", Peter: "#0f35e5", Dave: "#ee6af5", Kenny: "#de34de" }
+      const height = 700;
+      const width = 1200;
+      const margin = { top: 20, right: 30, bottom: 30, left: 40 };
 
-// set the ranges
-var x = d3.scaleBand()
-          .range([0, width])
-          .padding(0.3);
-var y = d3.scaleLinear()
-          .range([height - margin.top - margin.bottom, 0]);
-          
-// append the svg object to the body of the page
-// append a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-var svg = d3.select("#canvas").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", 
-          "translate(" + margin.left + "," + margin.top + ")");
+      const x = d3
+        .scaleBand()
+        .domain(data.map((d) => d.name))
+        .rangeRound([margin.left, width - margin.right])
+        .padding(0.1);
 
-        /*
-// get the data
-d3.csv("sales.csv", function(error, data) {
-  if (error) throw error;
+      const hourStart = 0;
+      const hourFinish = 24;
 
-  // format the data
-  data.forEach(function(d) {
-    d.sales = +d.sales;
-  });
-  */
+      const y1 = d3
+        .scaleLinear()
+        .domain([hourStart, hourFinish])
+        .rangeRound([height - margin.top - margin.bottom, margin.bottom]);
 
-  // Scale the range of the data in the domains
-  x.domain(data.map(d => { return d.name; }));
-  y.domain([
-    1, 16
-  ]);
-    console.log("min" , d3.min(data.map(d => { return d.log[0].time; }))) 
-    console.log("max", d3.max(data.map(d => { return d.log[d.log.length-1].time; }))) 
+      const xAxis = (g) =>
+        g.attr("transform", `translate(0,${height - margin.bottom})`).call(
+          d3
+            .axisBottom(x)
+            .tickSizeOuter(0)
+        );
 
-  // append the rectangles for the bar chart
-  svg.selectAll(".bar")
-      .data(data.map(e => e))
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", e => x(e.name))
-      .attr("width", x.bandwidth())
-      .attr("y", e => y(e.log[e.log.length - 1].time))
-      .attr("height", e => y(e.log[e.log.length - 1].time - e.log[0].time))
-  // add the x Axis
-  svg.append("g")
-      .attr("transform", "translate(0," +( height + 20 )+ ")")
-      .call(d3.axisBottom(x));
-  console.log("height", height);
+      const y1Axis = (g) =>
+        g
+          .attr("transform", `translate(${margin.left},0)`)
+          .style("color", "#ff34ae")
+          .call(d3.axisLeft(y1).ticks(null, "s"))
+          .call((g) => g.select(".domain").remove())
+          .call((g) =>
+            g
+              .append("text")
+              .attr("x", -margin.left)
+              .attr("y", 10)
+              .attr("fill", "currentColor")
+              .attr("text-anchor", "start")
+              .text(data.y1)
+          );
 
-  // add the y Axis
-  svg.append("g")
-      .call(d3.axisLeft(y));
-},
-      //update when data[0].date changes
-      [data[0].date]
-    );
+      svg.select(".x-axis").call(xAxis);
+      svg.select(".y-axis").call(y1Axis);
+
+      svg
+        .select(".plot-area")
+        .attr("fill", "3eff99")
+        .selectAll(".bar")
+        .data(data)
+        .join("rect")
+        .attr("fill", (d) => colour[d.name])
+        .attr("class", "bar")
+        .attr("x", (d) => x(d.name))
+        .attr("width", x.bandwidth())
+        .attr("y", (d) => y1(d.log[d.log.length - 1]))
+        .transition()
+        .duration(500)
+        .attr("height", function(d){ 
+          return(
+            y1(0) 
+            - y1(d.log[d.log.length - 1]) 
+            - (y1(0) - y1(d.log[0])))
+        });
+      svg
+        .select(".plot-area")
+        .attr("fill", "3eff99")
+        .selectAll(".bar")
+        .data(data)
+        .exit().remove()
+    },
+    [data]);
   } catch {
     console.log("error with: ", data);
     return (<h1>fuck</h1>);
   }
     return (
-      <div id="canvas"></div>
+      <svg ref={setRef}
+      style={{
+        height: "80vh",
+        width: "100%",
+        marginRight: "0px",
+        marginLeft: "0px",
+      }}>
+      <g className="plot-area" />
+      <g className="x-axis" />
+      <g className="y-axis" />
+      </svg>
     );
 }
 
